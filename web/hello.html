@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>SUBGEN Player</title>
+        <link rel="icon" type="image/x-icon" href="./subgen-logo.ico">
+
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/css/bootstrap.min.css">
+        <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.slim.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/js/bootstrap.bundle.min.js"></script>
+        <script src="https://cdn.tutorialjinni.com/jquery/3.6.1/jquery.min.js"></script>
+        <script src="https://cdn.tutorialjinni.com/notify/0.4.2/notify.min.js"></script>
+
+        <link rel="stylesheet" href="./index.css">
+        
+        <!-- Include eel.js - note this file doesn't exist in the 'web' directory -->
+        <script type="text/javascript" src="/eel.js"></script>
+        <script src="./videosub.js"></script>
+        <script type="text/javascript">
+        
+        eel.expose(say_hello_js);               // Expose this function to Python
+        function say_hello_js(x) {
+            console.log("Hello from " + x);
+        }
+        
+        say_hello_js("Javascript World!");
+        eel.say_hello_py("Javascript World!");  // Call a Python function
+        
+        </script>
+    </head>
+    
+    <body>
+        <div class="">
+            <video controls="controls" id="video" poster="./subgen-full.png" width="984px" height="529px">
+                <source id="source" src="" type="video/mp4" /><!-- WebKit -->
+                <track id="track" src="./test.srt" kind="subtitle" srclang="en-US" label="English" />
+                Your browser does not support HTML5 video.
+            </video>
+        </div>
+        <div class="loading animated fadeIn">
+            <div class="bg" id="loading" hidden></div>
+        </div>
+        <div class="mx-3 my-3">
+            <form>
+                <div class="row">
+                  <div class="col">
+                    <div class="custom-file">
+                        <input type="file" class="custom-file-input" id="customFile" name="filename" onchange="fileSelect()">
+                        <label class="custom-file-label" for="customFile">Choose file</label>
+                      </div>
+                  </div>
+                  <div class="col">
+                    <select class="form-control" id="language">
+                        <option value="default" selected>English (Native)</option>
+                        <option value="si">Sinhala</option>
+                        <option value="ta">Tamil</option>
+                    </select>
+                  </div>
+                  <div class="col">
+                    <button id="btn_generate" type="button" class="btn btn-primary" disabled onclick="generate()">Generate Subtitle</button>
+                    <button id="btn_play" type="button" class="btn btn-primary" disabled onclick="play()">Generate & Play</button>
+                  </div>
+                </div>
+              </form>
+        </div>
+
+        <script>
+            function fileSelect(){
+                if(document.getElementById("customFile").value.split('.')[
+                (document.getElementById("customFile").value.split('.').length)-1
+                ] != "mp4") {
+
+                    if(document.getElementById("customFile").value != ""){
+                        $.notify.addStyle("bootstrap", {
+                            html: "<div>\n<span data-notify-text></span>\n</div>",
+                            classes: {
+                                base: {
+                                    "color": "white",
+                                    "padding": "8px 15px 8px 14px",
+                                    "background": "linear-gradient(90deg, rgb(13, 60, 134) 0%, rgba(38,106,216,1) 100%)",
+                                    "background": "-webkit-linear-gradient(90deg, rgb(13, 60, 134) 0%, rgba(38,106,216,1) 100%)",
+                                    "border": "1px solid #1d1d1d",
+                                    "border-radius": "4px",
+                                    "white-space": "nowrap",
+                                }
+                            }
+                        }
+                        )
+                        $.notify("Invalid file format",{position:"top center",className:"info"});
+                    }
+
+                    document.getElementById('btn_generate').disabled = true;
+                    document.getElementById('btn_play').disabled = true;
+                }
+                else{
+                    
+                    document.getElementById('btn_generate').disabled = false;
+                    document.getElementById('btn_play').disabled = false;
+                }
+            }
+
+            function generate(){
+                var file = document.getElementById("customFile").value;
+                var language = document.getElementById("language").value;
+
+                eel.generate(file, language)
+
+                document.getElementById('loading').hidden = false;
+
+                setTimeout(() => {  document.getElementById('loading').hidden = true; }, 5000);
+            }
+
+            function play(){
+                var file = document.getElementById("customFile").value;
+                var language = document.getElementById("language").value;
+
+                eel.generate(file, language)
+
+                document.getElementById('loading').hidden = false;
+
+                setTimeout(() => {
+                    document.getElementById('loading').hidden = true;
+                    document.getElementById('video').src=file;
+                    document.getElementById('track').src="";
+                    document.getElementById('video').play();
+                }, 1000);
+            }
+        </script>
+
+        <script>
+            // Add the following code if you want the name of the file appear on select
+            $(".custom-file-input").on("change", function() {
+              var fileName = $(this).val().split("\\").pop();
+              $(this).siblings(".custom-file-label").addClass("selected").html(fileName);
+            });
+        </script>
+    </body>
+</html>
